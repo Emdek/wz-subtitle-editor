@@ -186,24 +186,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	event->accept();
 }
 
-void MainWindow::openMovie(const QString &fileName)
-{
-	QString title = QFileInfo(fileName).fileName();
-	title = title.left(title.indexOf('.'));
-
-	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
-
-	m_fileNameLabel->setText(title);
-	m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime())));
-
-	m_mediaObject->setCurrentSource(Phonon::MediaSource(fileName));
-
-	m_videoWidget->widget()->show();
-	m_videoWidget->widget()->update();
-
-	m_ui->actionPlayPause->setEnabled(true);
-}
-
 void MainWindow::actionOpen()
 {
 	if (isWindowModified() && QMessageBox::warning(this, tr("Question"), tr("Do you really want to close current subtitles without saving?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
@@ -213,7 +195,7 @@ void MainWindow::actionOpen()
 
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video or Subtitle file"),
 			QSettings().value("lastUsedDir", QDesktopServices::storageLocation(QDesktopServices::HomeLocation)).toString(),
-			tr("Video and subtitle files (*.txt *.og?)"));
+			tr("Video and subtitle files (*.txt *.txa *.og?)"));
 
 	if (!fileName.isEmpty())
 	{
@@ -590,42 +572,52 @@ QString MainWindow::timeToString(qint64 time)
 bool MainWindow::openFile(const QString &fileName)
 {
 	const QString basename = fileName.left(fileName.length() - 3);
-	const QString oggfile = basename + "ogg";
-	const QString ogmfile = basename + "ogm";
-	const QString ogvfile = basename + "ogv";
-	const QString txtfile = basename + "txt";
-	const QString txafile = basename + "txa";
+	const QString oggFile = basename + "ogg";
+	const QString ogmFile = basename + "ogm";
+	const QString ogvFile = basename + "ogv";
+	const QString txtFile = basename + "txt";
+	const QString txaFile = basename + "txa";
 	bool status = true;
 
 	m_subtitles[0].clear();
 	m_subtitles[1].clear();
 
-	if (QFile::exists(oggfile))
+	if (QFile::exists(oggFile) && !openMovie(oggFile))
 	{
-		openMovie(oggfile);
+		status = false;
 	}
 
-	if (QFile::exists(ogmfile))
+	if (QFile::exists(ogmFile) && !openMovie(ogmFile))
 	{
-		openMovie(ogmfile);
+		status = false;
 	}
 
-	if (QFile::exists(ogvfile))
+	if (QFile::exists(ogvFile) && !openMovie(ogvFile))
 	{
-		openMovie(ogvfile);
+		status = false;
 	}
 
-	if (QFile::exists(txtfile))
+	if (QFile::exists(txaFile) && !openSubtitles(txaFile, 0))
 	{
-		status = openSubtitles(txtfile, 1);
+		status = false;
 	}
 
-	if (QFile::exists(txafile))
+	if (QFile::exists(txtFile) && !openSubtitles(txtFile, 1))
 	{
-		status = openSubtitles(txafile, 0);
+		status = false;
 	}
 
 	selectTrack(1);
+
+	m_currentPath = fileName.left(fileName.indexOf('.'));
+
+	QString title = QFileInfo(fileName).fileName();
+	title = title.left(title.indexOf('.'));
+
+	m_fileNameLabel->setText(title);
+
+	setWindowModified(false);
+	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
 
 	QFileInfo fileInfo(fileName);
 	QStringList recentFiles = QSettings().value("recentFiles").toStringList();
@@ -639,6 +631,26 @@ bool MainWindow::openFile(const QString &fileName)
 	return status;
 }
 
+bool MainWindow::openMovie(const QString &fileName)
+{
+	QString title = QFileInfo(fileName).fileName();
+	title = title.left(title.indexOf('.'));
+
+	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
+
+	m_fileNameLabel->setText(title);
+	m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime())));
+
+	m_mediaObject->setCurrentSource(Phonon::MediaSource(fileName));
+
+	m_videoWidget->widget()->show();
+	m_videoWidget->widget()->update();
+
+	m_ui->actionPlayPause->setEnabled(true);
+
+	return true;
+}
+
 bool MainWindow::openSubtitles(const QString &fileName, int index)
 {
 	QFile file(fileName);
@@ -649,8 +661,6 @@ bool MainWindow::openSubtitles(const QString &fileName, int index)
 
 		return false;
 	}
-
-	setWindowModified(false);
 
 	m_subtitles[index].clear();
 
@@ -682,15 +692,6 @@ bool MainWindow::openSubtitles(const QString &fileName, int index)
 	}
 
 	file.close();
-
-	m_currentPath = fileName.left(fileName.indexOf('.'));
-
-	QString title = QFileInfo(fileName).fileName();
-	title = title.left(title.indexOf('.'));
-
-	m_fileNameLabel->setText(title);
-
-	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
 
 	return true;
 }

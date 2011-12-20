@@ -79,9 +79,9 @@ public slots:
 protected:
 	void changeEvent(QEvent *event);
 	void closeEvent(QCloseEvent *event);
-	void openMovie(const QString &filename);
 	QString timeToString(qint64 time);
 	bool openFile(const QString &fileName);
+	bool openMovie(const QString &filename);
 	bool openSubtitles(const QString &fileName, int index);
 	bool saveSubtitles(const QString &fileName);
 	bool eventFilter(QObject *object, QEvent *event);
