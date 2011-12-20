@@ -271,7 +271,7 @@ void MainWindow::stateChanged(Phonon::State state)
 			m_ui->actionPlayPause->setText(tr("Play"));
 			m_ui->actionPlayPause->setIcon(QIcon::fromTheme("media-playback-play", style()->standardIcon(QStyle::SP_MediaPlay)));
 			m_ui->actionStop->setEnabled(false);
-			m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime())));
+			m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime(), true)));
 			break;
 		case Phonon::PlayingState:
 			m_ui->actionPlayPause->setText(tr("Pause"));
@@ -537,26 +537,31 @@ void MainWindow::updateRecentFilesMenu()
 	m_ui->menuOpenRecent->setEnabled(recentFiles.count());
 }
 
-QString MainWindow::timeToString(qint64 time)
+QString MainWindow::timeToString(qint64 time, bool readable)
 {
 	QString string;
 	int fractions = (time / 100);
 	int seconds = (fractions / 10);
-	int minutes = (seconds / 60);
+	int minutes = 0;
 
-	if (minutes < 10)
+	if (readable)
 	{
-		string.append('0');
-	}
+		minutes = (seconds / 60);
 
-	string.append(QString::number(minutes));
-	string.append(':');
+		if (minutes < 10)
+		{
+			string.append('0');
+		}
 
-	seconds = (seconds - (minutes * 60));
+		string.append(QString::number(minutes));
+		string.append(':');
 
-	if (seconds < 10)
-	{
-		string.append('0');
+		seconds = (seconds - (minutes * 60));
+
+		if (seconds < 10)
+		{
+			string.append('0');
+		}
 	}
 
 	string.append(QString::number(seconds));
@@ -639,7 +644,7 @@ bool MainWindow::openMovie(const QString &fileName)
 	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
 
 	m_fileNameLabel->setText(title);
-	m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime())));
+	m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime(), true)));
 
 	m_mediaObject->setCurrentSource(Phonon::MediaSource(fileName));
 
@@ -719,7 +724,7 @@ bool MainWindow::saveSubtitles(const QString &fileName)
 
 		for (int j = 0; j < m_subtitles[i].count(); ++j)
 		{
-			textStream << QString("%1\t%2\t\t%3\t%4\t_(\"%5\")\n").arg(m_subtitles[i][j].position.x()).arg(m_subtitles[i][j].position.y()).arg(timeToString(m_subtitles[i][j].begin.msecsTo(QTime()))).arg(timeToString(m_subtitles[i][j].end.msecsTo(QTime()))).arg(m_subtitles[i][j].text);
+			textStream << QString("%1\t%2\t\t%3\t%4\t_(\"%5\")\n").arg(m_subtitles[i][j].position.x()).arg(m_subtitles[i][j].position.y()).arg(timeToString(QTime().msecsTo(m_subtitles[i][j].begin))).arg(timeToString(QTime().msecsTo(m_subtitles[i][j].end))).arg(m_subtitles[i][j].text);
 
 			if ((j + 1) < m_subtitles[i].count() && m_subtitles[i][j].begin != m_subtitles[i][j + 1].begin)
 			{
