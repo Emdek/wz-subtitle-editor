@@ -584,12 +584,13 @@ QString MainWindow::timeToString(qint64 time, bool readable)
 
 bool MainWindow::openFile(const QString &fileName)
 {
-	const QString basename = fileName.left(fileName.length() - 3);
-	const QString oggFile = basename + "ogg";
-	const QString ogmFile = basename + "ogm";
-	const QString ogvFile = basename + "ogv";
-	const QString txtFile = basename + "txt";
-	const QString txaFile = basename + "txa";
+	m_currentPath = fileName.left(fileName.lastIndexOf('.'));
+
+	const QString oggFile = m_currentPath + ".ogg";
+	const QString ogmFile = m_currentPath + ".ogm";
+	const QString ogvFile = m_currentPath + ".ogv";
+	const QString txtFile = m_currentPath + ".txt";
+	const QString txaFile = m_currentPath + ".txa";
 	bool status = true;
 
 	m_subtitles[0].clear();
@@ -621,8 +622,6 @@ bool MainWindow::openFile(const QString &fileName)
 	}
 
 	selectTrack(1);
-
-	m_currentPath = fileName.left(fileName.indexOf('.'));
 
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
@@ -718,7 +717,7 @@ bool MainWindow::saveSubtitles(const QString &fileName)
 			continue;
 		}
 
-		QString path = (fileName.endsWith(".txt")?fileName.left(fileName.indexOf(".txt")):fileName) + (i?".txt":".txa");
+		QString path = (fileName.contains(QRegExp("\\.(txt|txa|ogg|ogm|ogv)$", Qt::CaseInsensitive))?fileName.left(fileName.lastIndexOf('.')):fileName) + (i?".txt":".txa");
 		QFile file(path);
 
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
