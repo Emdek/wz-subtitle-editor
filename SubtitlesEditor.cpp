@@ -471,6 +471,7 @@ void MainWindow::updateSubtitle()
 	m_subtitles[m_currentTrack][m_currentSubtitle].end = m_ui->beginTimeEdit->time().addMSecs(m_ui->lengthTimeEdit->time().msecsTo(QTime()));
 
 	setWindowModified(true);
+	updateActions();
 }
 
 void MainWindow::rescaleSubtitles()
@@ -523,8 +524,8 @@ void MainWindow::updateActions()
 {
 	const bool available = (!m_subtitles[0].isEmpty() || !m_subtitles[1].isEmpty());
 
-	m_ui->actionSave->setEnabled(available);
-	m_ui->actionSaveAs->setEnabled(available);
+	m_ui->actionSave->setEnabled(available || isWindowModified());
+	m_ui->actionSaveAs->setEnabled(available || isWindowModified());
 	m_ui->actionPrevious->setEnabled(available && m_subtitles[m_currentTrack].count() > 1);
 	m_ui->actionNext->setEnabled(available && m_subtitles[m_currentTrack].count() > 1);
 	m_ui->actionRemove->setEnabled(available);
