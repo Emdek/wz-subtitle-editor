@@ -75,8 +75,9 @@ public slots:
 protected:
 	void changeEvent(QEvent *event);
 	void closeEvent(QCloseEvent *event);
+	void openMovie(const QString &filename);
+	void openSubtitles(const QString &fileName, int index);
 	QString timeToString(qint64 time);
-	QList<Subtitle> readSubtitles(const QString &fileName);
 	bool saveSubtitles(QString fileName);
 	bool eventFilter(QObject *object, QEvent *event);
 
@@ -93,8 +94,6 @@ private:
 	int m_currentSubtitle;
 	int m_currentTrack;
 
-	void openMovie(const QString &filename);
-	void openSubtitle(const QString &filename, int index);
 };
 
 #endif // SUBTITLESEDITOR_H

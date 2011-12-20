@@ -23,6 +23,7 @@
 
 #include <QtCore/QSettings>
 
+#include <QtGui/QTabBar>
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
 #include <QtGui/QInputDialog>
@@ -31,8 +32,6 @@
 
 #include <Phonon/AudioOutput>
 #include <Phonon/VideoWidget>
-
-#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
@@ -77,9 +76,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
 	m_ui->graphicsView->setScene(new QGraphicsScene(this));
 	m_ui->graphicsView->scene()->addItem(m_videoWidget);
-	m_ui->graphicsView->scene()->addItem(m_subtitlesTopWidget);
-	m_ui->graphicsView->scene()->addItem(m_subtitlesBottomWidget);
 	m_ui->graphicsView->installEventFilter(this);
+
+	QTabBar *tabBar = new QTabBar(m_ui->centralWidget);
+	tabBar->setDocumentMode(true);
+	tabBar->setShape(QTabBar::RoundedWest);
+	tabBar->addTab(tr("Top"));
+	tabBar->addTab(tr("Bottom"));
+	tabBar->setCurrentIndex(1);
+
+	m_ui->tabBarLayout->insertWidget(0, tabBar);
 
 	m_ui->actionPlayPause->setIcon(QIcon::fromTheme("media-playback-start", style()->standardIcon(QStyle::SP_MediaPlay)));
 	m_ui->actionPlayPause->setShortcut(tr("Space"));
@@ -134,7 +140,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	connect(m_ui->actionStop, SIGNAL(triggered()), m_mediaObject, SLOT(stop()));
 	connect(m_ui->actionAboutQt, SIGNAL(triggered()), QApplication::instance(), SLOT(aboutQt()));
 	connect(m_ui->actionAboutApplication, SIGNAL(triggered()), this, SLOT(actionAboutApplication()));
-	connect(m_ui->trackComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectTrack(int)));
+	connect(tabBar, SIGNAL(currentChanged(int)), this, SLOT(selectTrack(int)));
 	connect(m_mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChanged(Phonon::State)));
 	connect(m_mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick()));
 	connect(m_mediaObject, SIGNAL(finished()), this, SLOT(finished()));
@@ -188,11 +194,6 @@ void MainWindow::openMovie(const QString &fileName)
 	m_ui->actionPlayPause->setEnabled(true);
 }
 
-void MainWindow::openSubtitle(const QString &fileName, int index)
-{
-	m_subtitles[index] = readSubtitles(fileName);
-}
-
 void MainWindow::actionOpen()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video or Subtitle file"),
@@ -228,19 +229,19 @@ void MainWindow::actionOpen()
 
 		if (QFile::exists(txtfile))
 		{
-			openSubtitle(txtfile, 0);
+			openSubtitles(txtfile, 1);
 
 			m_currentPath = fileName;
 		}
 
 		if (QFile::exists(txafile))
 		{
-			openSubtitle(txafile, 1);
+			openSubtitles(txafile, 0);
 
 			m_currentPath = fileName;
 		}
 
-		selectTrack(0);
+		selectTrack(1);
 
 		QSettings().setValue("lastUsedDir", QFileInfo(fileName).dir().path());
 	}
@@ -333,9 +334,8 @@ void MainWindow::tick()
 	{
 		if (m_subtitles[0].at(i).begin < currentTime && m_subtitles[0].at(i).end > currentTime)
 		{
-			currentBottomSubtitles.append(m_subtitles[0].at(i).text);
-			currentBottomSubtitles.append("<br />");
-			m_currentSubtitle = i;
+			currentTopSubtitles.append(m_subtitles[0].at(i).text);
+			currentTopSubtitles.append("<br />");
 		}
 	}
 
@@ -343,8 +343,10 @@ void MainWindow::tick()
 	{
 		if (m_subtitles[1].at(i).begin < currentTime && m_subtitles[1].at(i).end > currentTime)
 		{
-			currentTopSubtitles.append(m_subtitles[1].at(i).text);
-			currentTopSubtitles.append("<br />");
+			currentBottomSubtitles.append(m_subtitles[1].at(i).text);
+			currentBottomSubtitles.append("<br />");
+
+			m_currentSubtitle = i;
 		}
 	}
 
@@ -544,17 +546,18 @@ QString MainWindow::timeToString(qint64 time)
 	return string;
 }
 
-QList<Subtitle> MainWindow::readSubtitles(const QString &fileName)
+void MainWindow::openSubtitles(const QString &fileName, int index)
 {
 	QFile file(fileName);
-	QList<Subtitle> subtitles;
 
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		QMessageBox::warning(this, tr("Error"), tr("Can not read subtitle file:\n%1").arg(fileName));
 
-		return subtitles;
+		return;
 	}
+
+	m_subtitles[index].clear();
 
 	QTextStream textStream(&file);
 
@@ -579,7 +582,7 @@ QList<Subtitle> MainWindow::readSubtitles(const QString &fileName)
 			subtitle.end = QTime().addMSecs(capturedTexts.value(4).toFloat() * 1000);
 			subtitle.position = QPoint(capturedTexts.value(1).toInt(), capturedTexts.value(2).toInt());
 
-			subtitles.append(subtitle);
+			m_subtitles[index].append(subtitle);
 		}
 	}
 
@@ -591,21 +594,18 @@ QList<Subtitle> MainWindow::readSubtitles(const QString &fileName)
 	setWindowTitle(tr("%1 - %2").arg("Subtitles Editor").arg(title));
 
 	m_fileNameLabel->setText(title);
-
-
-	return subtitles;
 }
 
 bool MainWindow::saveSubtitles(QString fileName)
 {
-	for (int i = 0; i < 2; ++i)
+	for (int i = 1; i >= 0; --i)
 	{
 		if (m_subtitles[i].isEmpty())
 		{
 			continue;
 		}
 
-		if (i > 0)
+		if (i == 0)
 		{
 			fileName = fileName.left(fileName.length() - 3) + "txa";
 		}

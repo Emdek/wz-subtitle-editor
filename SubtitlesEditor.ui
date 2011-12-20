@@ -248,7 +248,7 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <layout class="QHBoxLayout" name="dockLayout" stretch="0,1,0">
      <property name="spacing">
       <number>0</number>
      </property>
@@ -256,48 +256,14 @@
       <number>0</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="topEditorLayout">
+      <layout class="QVBoxLayout" name="tabBarLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QComboBox" name="trackComboBox">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <item>
-          <property name="text">
-           <string>Bottom</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Top</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="addButton">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="removeButton">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
+        <spacer name="tabBarSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -307,104 +273,39 @@
          </property>
         </spacer>
        </item>
-       <item>
-        <widget class="QToolButton" name="previousButton">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="autoRepeat">
-          <bool>false</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="nextButton">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="autoRepeat">
-          <bool>false</bool>
-         </property>
-         <property name="autoRaise">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="bottomEditorLayout">
-       <property name="spacing">
-        <number>0</number>
-       </property>
+      <widget class="QPlainTextEdit" name="subtitleTextEdit"/>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="propertiesLayout">
        <item>
-        <widget class="QPlainTextEdit" name="subtitleTextEdit">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>200</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="propertiesLayout">
+        <layout class="QHBoxLayout" name="buttonslLayout">
          <item>
-          <widget class="QTimeEdit" name="beginTimeEdit">
-           <property name="toolTip">
-            <string>Begin</string>
+          <widget class="QToolButton" name="addButton">
+           <property name="text">
+            <string/>
            </property>
-           <property name="displayFormat">
-            <string>mm:ss:zzz</string>
+           <property name="autoRaise">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QTimeEdit" name="lengthTimeEdit">
-           <property name="toolTip">
-            <string>Length</string>
+          <widget class="QToolButton" name="removeButton">
+           <property name="text">
+            <string/>
            </property>
-           <property name="displayFormat">
-            <string>mm:ss:zzz</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="xPositionSpinBox">
-           <property name="toolTip">
-            <string>X Coordinate</string>
-           </property>
-           <property name="maximum">
-            <number>99999</number>
+           <property name="autoRaise">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="yPositionSpinBox">
-           <property name="toolTip">
-            <string>Y Coordinate</string>
-           </property>
-           <property name="maximum">
-            <number>99999</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer">
+          <spacer name="horizontalSpacer">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::MinimumExpanding</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -414,7 +315,93 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QToolButton" name="previousButton">
+           <property name="autoRepeat">
+            <bool>false</bool>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonIconOnly</enum>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="nextButton">
+           <property name="autoRepeat">
+            <bool>false</bool>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonIconOnly</enum>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QTimeEdit" name="beginTimeEdit">
+         <property name="toolTip">
+          <string>Begin</string>
+         </property>
+         <property name="displayFormat">
+          <string>mm:ss:zzz</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTimeEdit" name="lengthTimeEdit">
+         <property name="toolTip">
+          <string>Length</string>
+         </property>
+         <property name="displayFormat">
+          <string>mm:ss:zzz</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="positionlLayout">
+         <item>
+          <widget class="QSpinBox" name="xPositionSpinBox">
+           <property name="toolTip">
+            <string>X Coordinate</string>
+           </property>
+           <property name="maximum">
+            <number>999</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="yPositionSpinBox">
+           <property name="toolTip">
+            <string>Y Coordinate</string>
+           </property>
+           <property name="maximum">
+            <number>999</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
