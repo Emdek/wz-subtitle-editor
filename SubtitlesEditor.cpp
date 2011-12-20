@@ -245,6 +245,8 @@ void MainWindow::actionOpen()
 
 		QSettings().setValue("lastUsedDir", QFileInfo(fileName).dir().path());
 	}
+
+	updateActions();
 }
 
 void MainWindow::actionSave()
@@ -364,6 +366,7 @@ void MainWindow::selectTrack(int track)
 	m_currentTrack = track;
 
 	selectSubtitle();
+	updateActions();
 }
 
 void MainWindow::addSubtitle()
@@ -374,6 +377,7 @@ void MainWindow::addSubtitle()
 	m_subtitles[m_currentTrack].insert(m_currentSubtitle, subtitle);
 
 	nextSubtitle();
+	updateActions();
 }
 
 void MainWindow::removeSubtitle()
@@ -383,6 +387,7 @@ void MainWindow::removeSubtitle()
 		m_subtitles[m_currentTrack].removeAt(m_currentSubtitle);
 
 		selectSubtitle();
+		updateActions();
 	}
 }
 
@@ -488,6 +493,18 @@ void MainWindow::rescaleSubtitles()
 	selectSubtitle();
 }
 
+void MainWindow::playPause()
+{
+	if (m_mediaObject->state() == Phonon::PlayingState)
+	{
+		m_mediaObject->pause();
+	}
+	else
+	{
+		m_mediaObject->play();
+	}
+}
+
 void MainWindow::updateVideo()
 {
 	m_videoWidget->resize(m_ui->graphicsView->size());
@@ -502,16 +519,16 @@ void MainWindow::updateVideo()
 	m_subtitlesBottomWidget->setTextWidth(m_ui->graphicsView->scene()->width() - 10);
 }
 
-void MainWindow::playPause()
+void MainWindow::updateActions()
 {
-	if (m_mediaObject->state() == Phonon::PlayingState)
-	{
-		m_mediaObject->pause();
-	}
-	else
-	{
-		m_mediaObject->play();
-	}
+	const bool available = (!m_subtitles[0].isEmpty() || !m_subtitles[1].isEmpty());
+
+	m_ui->actionSave->setEnabled(available);
+	m_ui->actionSaveAs->setEnabled(available);
+	m_ui->actionPrevious->setEnabled(available && m_subtitles[m_currentTrack].count() > 1);
+	m_ui->actionNext->setEnabled(available && m_subtitles[m_currentTrack].count() > 1);
+	m_ui->actionRemove->setEnabled(available);
+	m_ui->actionRescale->setEnabled(available);
 }
 
 QString MainWindow::timeToString(qint64 time)
@@ -594,7 +611,7 @@ void MainWindow::openSubtitles(const QString &fileName, int index)
 	setWindowTitle(tr("%1 - %2").arg("Subtitles Editor").arg(title));
 
 	m_fileNameLabel->setText(title);
-}
+	}
 
 bool MainWindow::saveSubtitles(QString fileName)
 {

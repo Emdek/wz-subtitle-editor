@@ -71,6 +71,7 @@ public slots:
 	void rescaleSubtitles();
 	void playPause();
 	void updateVideo();
+	void updateActions();
 
 protected:
 	void changeEvent(QEvent *event);
