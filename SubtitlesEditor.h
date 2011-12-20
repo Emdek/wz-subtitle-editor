@@ -83,7 +83,7 @@ protected:
 	QString timeToString(qint64 time);
 	bool openFile(const QString &fileName);
 	bool openSubtitles(const QString &fileName, int index);
-	bool saveSubtitles(QString fileName);
+	bool saveSubtitles(const QString &fileName);
 	bool eventFilter(QObject *object, QEvent *event);
 
 private:

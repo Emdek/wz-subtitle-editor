@@ -618,15 +618,11 @@ bool MainWindow::openFile(const QString &fileName)
 	if (QFile::exists(txtfile))
 	{
 		status = openSubtitles(txtfile, 1);
-
-		m_currentPath = fileName;
 	}
 
 	if (QFile::exists(txafile))
 	{
 		status = openSubtitles(txafile, 0);
-
-		m_currentPath = fileName;
 	}
 
 	selectTrack(1);
@@ -655,6 +651,7 @@ bool MainWindow::openSubtitles(const QString &fileName, int index)
 	}
 
 	setWindowModified(false);
+
 	m_subtitles[index].clear();
 
 	QTextStream textStream(&file);
@@ -686,6 +683,8 @@ bool MainWindow::openSubtitles(const QString &fileName, int index)
 
 	file.close();
 
+	m_currentPath = fileName.left(fileName.indexOf('.'));
+
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
 
@@ -696,7 +695,7 @@ bool MainWindow::openSubtitles(const QString &fileName, int index)
 	return true;
 }
 
-bool MainWindow::saveSubtitles(QString fileName)
+bool MainWindow::saveSubtitles(const QString &fileName)
 {
 	for (int i = 1; i >= 0; --i)
 	{
@@ -705,16 +704,12 @@ bool MainWindow::saveSubtitles(QString fileName)
 			continue;
 		}
 
-		if (i == 0)
-		{
-			fileName = fileName.left(fileName.length() - 3) + "txa";
-		}
-
-		QFile file(fileName);
+		QString path = (fileName.endsWith(".txt")?fileName.left(fileName.indexOf(".txt")):fileName) + (i?".txt":".txa");
+		QFile file(path);
 
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
 		{
-			QMessageBox::warning(this, tr("Error"), tr("Can not save subtitle file:\n%1").arg(fileName));
+			QMessageBox::warning(this, tr("Error"), tr("Can not save subtitle file:\n%1").arg(path));
 
 			return false;
 		}
