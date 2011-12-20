@@ -23,6 +23,7 @@
 
 #include <QtCore/QSettings>
 
+#include <QtGui/QLabel>
 #include <QtGui/QTabBar>
 #include <QtGui/QMessageBox>
 #include <QtGui/QFileDialog>
@@ -94,9 +95,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	m_ui->actionStop->setIcon(QIcon::fromTheme("media-playback-stop", style()->standardIcon(QStyle::SP_MediaStop)));
 	m_ui->actionStop->setDisabled(true);
 
-	m_fileNameLabel = new QLabel(tr("No file loaded"), this);
-	m_fileNameLabel->setMaximumWidth(300);
-	m_timeLabel = new QLabel("00:00.0 / 00:00.0", this);
+	QLabel *timeLabel = new QLabel("00:00.0 / 00:00.0", this);
+	QLabel *fileNameLabel = new QLabel(tr("No file loaded"), this);
+	fileNameLabel->setMaximumWidth(300);
 
 	m_ui->actionOpen->setIcon(QIcon::fromTheme("document-open", style()->standardIcon(QStyle::SP_DirOpenIcon)));
 	m_ui->menuOpenRecent->setIcon(QIcon::fromTheme("document-open-recent"));
@@ -118,8 +119,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	m_ui->nextButton->setDefaultAction(m_ui->actionNext);
 	m_ui->seekSlider->setMediaObject(m_mediaObject);
 	m_ui->volumeSlider->setAudioOutput(audioOutput);
-	m_ui->statusBar->addPermanentWidget(m_fileNameLabel);
-	m_ui->statusBar->addPermanentWidget(m_timeLabel);
+	m_ui->statusBar->addPermanentWidget(fileNameLabel);
+	m_ui->statusBar->addPermanentWidget(timeLabel);
 
 	resize(QSettings().value("Window/size", size()).toSize());
 	move(QSettings().value("Window/position", pos()).toPoint());
@@ -127,6 +128,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	setWindowTitle(tr("%1 - Unnamed[*]").arg("Subtitles Editor"));
 	updateVideo();
 
+	connect(this, SIGNAL(fileChanged(QString)), fileNameLabel, SLOT(setText(QString)));
+	connect(this, SIGNAL(timeChanged(QString)), timeLabel, SLOT(setText(QString)));
 	connect(m_ui->menuFile, SIGNAL(aboutToShow()), this, SLOT(updateRecentFilesMenu()));
 	connect(m_ui->actionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
 	connect(m_ui->menuOpenRecent, SIGNAL(triggered(QAction*)), this, SLOT(actionOpenRecent(QAction*)));
@@ -267,23 +270,28 @@ void MainWindow::stateChanged(Phonon::State state)
 			}
 
 			m_ui->actionPlayPause->setEnabled(false);
+
 		case Phonon::StoppedState:
 			m_ui->actionPlayPause->setText(tr("Play"));
 			m_ui->actionPlayPause->setIcon(QIcon::fromTheme("media-playback-play", style()->standardIcon(QStyle::SP_MediaPlay)));
 			m_ui->actionStop->setEnabled(false);
-			m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime(), true)));
+
+			emit timeChanged(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime(), true)));
+
 			break;
 		case Phonon::PlayingState:
 			m_ui->actionPlayPause->setText(tr("Pause"));
 			m_ui->actionPlayPause->setEnabled(true);
 			m_ui->actionPlayPause->setIcon(QIcon::fromTheme("media-playback-pause", style()->standardIcon(QStyle::SP_MediaPause)));
 			m_ui->actionStop->setEnabled(true);
+
 			break;
 		case Phonon::PausedState:
 			m_ui->actionPlayPause->setText(tr("Play"));
 			m_ui->actionPlayPause->setEnabled(true);
 			m_ui->actionPlayPause->setIcon(QIcon::fromTheme("media-playback-play", style()->standardIcon(QStyle::SP_MediaPlay)));
 			m_ui->actionStop->setEnabled(true);
+
 			break;
 		default:
 			break;
@@ -302,11 +310,11 @@ void MainWindow::finished()
 
 void MainWindow::tick()
 {
-	m_timeLabel->setText(QString("%1 / %2").arg(timeToString(m_mediaObject->currentTime())).arg(timeToString(m_mediaObject->totalTime())));
-
 	QString currentBottomSubtitles;
 	QString currentTopSubtitles;
 	const QTime currentTime = QTime().addMSecs(m_mediaObject->currentTime());
+
+	emit timeChanged(QString("%1 / %2").arg(timeToString(m_mediaObject->currentTime())).arg(timeToString(m_mediaObject->totalTime())));
 
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
@@ -619,7 +627,7 @@ bool MainWindow::openFile(const QString &fileName)
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
 
-	m_fileNameLabel->setText(title);
+	emit fileChanged(title);
 
 	setWindowModified(false);
 	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
@@ -643,8 +651,8 @@ bool MainWindow::openMovie(const QString &fileName)
 
 	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
 
-	m_fileNameLabel->setText(title);
-	m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime(), true)));
+	emit fileChanged(title);
+	emit timeChanged(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime(), true)));
 
 	m_mediaObject->setCurrentSource(Phonon::MediaSource(fileName));
 
@@ -738,7 +746,7 @@ bool MainWindow::saveSubtitles(const QString &fileName)
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
 
-	m_fileNameLabel->setText(title);
+	emit fileChanged(title);
 
 	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
 	setWindowModified(false);

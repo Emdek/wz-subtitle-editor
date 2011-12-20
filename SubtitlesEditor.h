@@ -23,7 +23,6 @@
 
 #include <QtCore/QTime>
 
-#include <QtGui/QLabel>
 #include <QtGui/QMainWindow>
 #include <QtGui/QGraphicsTextItem>
 #include <QtGui/QGraphicsProxyWidget>
@@ -93,11 +92,13 @@ private:
 	QGraphicsTextItem *m_subtitlesTopWidget;
 	QGraphicsTextItem *m_subtitlesBottomWidget;
 	QString m_currentPath;
-	QLabel *m_fileNameLabel;
-	QLabel *m_timeLabel;
 	QList<QList<Subtitle> > m_subtitles;
 	int m_currentSubtitle;
 	int m_currentTrack;
+
+signals:
+	void timeChanged(QString time);
+	void fileChanged(QString file);
 
 };
 
