@@ -21,8 +21,10 @@
 #ifndef SUBTITLESEDITOR_H
 #define SUBTITLESEDITOR_H
 
-#include <QtGui/QMainWindow>
 #include <QtGui/QLabel>
+#include <QtGui/QMainWindow>
+#include <QtGui/QGraphicsTextItem>
+#include <QtGui/QGraphicsProxyWidget>
 
 #include <Phonon/MediaObject>
 
@@ -66,6 +68,7 @@ public slots:
 	void updateSubtitle();
 	void rescaleSubtitles();
 	void playPause();
+	void updateVideo();
 
 protected:
 	void changeEvent(QEvent *event);
@@ -74,10 +77,14 @@ protected:
 	QList<Subtitle> readSubtitles(const QString &fileName);
 	double timeToSeconds(QTime time);
 	bool saveSubtitles(QString fileName);
+	bool eventFilter(QObject *object, QEvent *event);
 
 private:
 	Ui::MainWindow *m_ui;
 	Phonon::MediaObject *m_mediaObject;
+	QGraphicsProxyWidget *m_videoWidget;
+	QGraphicsTextItem *m_subtitlesTopWidget;
+	QGraphicsTextItem *m_subtitlesBottomWidget;
 	QString m_currentPath;
 	QLabel *m_fileNameLabel;
 	QLabel *m_timeLabel;
