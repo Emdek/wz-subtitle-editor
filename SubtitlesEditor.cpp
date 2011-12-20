@@ -32,6 +32,8 @@
 #include <Phonon/AudioOutput>
 #include <Phonon/VideoWidget>
 
+#include <QDebug>
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
 	m_videoWidget(new QGraphicsProxyWidget()),
@@ -327,33 +329,31 @@ void MainWindow::tick()
 
 	QString currentBottomSubtitles;
 	QString currentTopSubtitles;
-	qint64 currentTime = (m_mediaObject->currentTime() / 1000);
+	const QTime currentTime = QTime().addMSecs(m_mediaObject->currentTime());
 
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
-		if (m_subtitles[0].at(i).beginTime < currentTime && m_subtitles[0].at(i).endTime > currentTime)
+		if (m_subtitles[0].at(i).begin < currentTime && m_subtitles[0].at(i).end > currentTime)
 		{
 			currentBottomSubtitles.append(m_subtitles[0].at(i).text);
-			currentBottomSubtitles.append(" | ");
+			currentBottomSubtitles.append("<br />");
 			m_currentSubtitle = i;
 		}
 	}
 
 	for (int i = 0; i < m_subtitles[1].count(); ++i)
 	{
-		if (m_subtitles[1].at(i).beginTime < currentTime && m_subtitles[1].at(i).endTime > currentTime)
+		if (m_subtitles[1].at(i).begin < currentTime && m_subtitles[1].at(i).end > currentTime)
 		{
 			currentTopSubtitles.append(m_subtitles[1].at(i).text);
-			currentTopSubtitles.append(" | ");
+			currentTopSubtitles.append("<br />");
 		}
 	}
 
-	showSubtitle();
-	currentTopSubtitles = currentTopSubtitles.left(currentTopSubtitles.length() - 3);
-	currentBottomSubtitles = currentBottomSubtitles.left(currentBottomSubtitles.length() - 3);
+	selectSubtitle();
 
-	m_subtitlesTopWidget->setHtml(currentTopSubtitles.replace('|', "<br />"));
-	m_subtitlesBottomWidget->setHtml(currentBottomSubtitles.replace('|', "<br />"));
+	m_subtitlesTopWidget->setHtml(currentTopSubtitles.left(currentTopSubtitles.length() - 6));
+	m_subtitlesBottomWidget->setHtml(currentBottomSubtitles.left(currentBottomSubtitles.length() - 6));
 
 	updateVideo();
 }
@@ -363,16 +363,13 @@ void MainWindow::selectTrack(int track)
 	m_currentSubtitle = 0;
 	m_currentTrack = track;
 
-	showSubtitle();
+	selectSubtitle();
 }
 
 void MainWindow::addSubtitle()
 {
 	Subtitle subtitle;
-	subtitle.positionX = 20;
-	subtitle.positionY = 432;
-	subtitle.beginTime = 0;
-	subtitle.endTime = 0;
+	subtitle.position = QPoint(20, 432);
 
 	m_subtitles[m_currentTrack].insert(m_currentSubtitle, subtitle);
 
@@ -385,7 +382,7 @@ void MainWindow::removeSubtitle()
 	{
 		m_subtitles[m_currentTrack].removeAt(m_currentSubtitle);
 
-		showSubtitle();
+		selectSubtitle();
 	}
 }
 
@@ -393,17 +390,17 @@ void MainWindow::previousSubtitle()
 {
 	--m_currentSubtitle;
 
-	showSubtitle();
+	selectSubtitle();
 }
 
 void MainWindow::nextSubtitle()
 {
 	++m_currentSubtitle;
 
-	showSubtitle();
+	selectSubtitle();
 }
 
-void MainWindow::showSubtitle()
+void MainWindow::selectSubtitle()
 {
 	disconnect(m_ui->subtitleTextEdit, SIGNAL(textChanged()), this, SLOT(updateSubtitle()));
 	disconnect(m_ui->xPositionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateSubtitle()));
@@ -434,13 +431,11 @@ void MainWindow::showSubtitle()
 
 	if (m_currentSubtitle < m_subtitles[m_currentTrack].count())
 	{
-		QTime nullTime(0, 0, 0, 0);
-
 		m_ui->subtitleTextEdit->setPlainText(m_subtitles[m_currentTrack].at(m_currentSubtitle).text);
-		m_ui->beginTimeEdit->setTime(nullTime.addMSecs((m_subtitles[m_currentTrack].at(m_currentSubtitle).beginTime * 1000)));
-		m_ui->lengthTimeEdit->setTime(nullTime.addMSecs(((m_subtitles[m_currentTrack].at(m_currentSubtitle).endTime * 1000) - (m_subtitles[m_currentTrack].at(m_currentSubtitle).beginTime * 1000))));
-		m_ui->xPositionSpinBox->setValue(m_subtitles[m_currentTrack].at(m_currentSubtitle).positionX);
-		m_ui->yPositionSpinBox->setValue(m_subtitles[m_currentTrack].at(m_currentSubtitle).positionY);
+		m_ui->beginTimeEdit->setTime(m_subtitles[m_currentTrack].at(m_currentSubtitle).begin);
+		m_ui->lengthTimeEdit->setTime(QTime().addMSecs(m_subtitles[m_currentTrack].at(m_currentSubtitle).begin.msecsTo(m_subtitles[m_currentTrack].at(m_currentSubtitle).end)));
+		m_ui->xPositionSpinBox->setValue(m_subtitles[m_currentTrack].at(m_currentSubtitle).position.x());
+		m_ui->yPositionSpinBox->setValue(m_subtitles[m_currentTrack].at(m_currentSubtitle).position.y());
 	}
 	else
 	{
@@ -468,10 +463,9 @@ void MainWindow::updateSubtitle()
 	}
 
 	m_subtitles[m_currentTrack][m_currentSubtitle].text = m_ui->subtitleTextEdit->toPlainText();
-	m_subtitles[m_currentTrack][m_currentSubtitle].positionX = m_ui->xPositionSpinBox->value();
-	m_subtitles[m_currentTrack][m_currentSubtitle].positionY = m_ui->yPositionSpinBox->value();
-	m_subtitles[m_currentTrack][m_currentSubtitle].beginTime = timeToSeconds(m_ui->beginTimeEdit->time());
-	m_subtitles[m_currentTrack][m_currentSubtitle].endTime = (timeToSeconds(m_ui->beginTimeEdit->time()) + timeToSeconds(m_ui->lengthTimeEdit->time()));
+	m_subtitles[m_currentTrack][m_currentSubtitle].position = QPoint(m_ui->xPositionSpinBox->value(), m_ui->yPositionSpinBox->value());
+	m_subtitles[m_currentTrack][m_currentSubtitle].begin = m_ui->beginTimeEdit->time();
+	m_subtitles[m_currentTrack][m_currentSubtitle].end = m_ui->beginTimeEdit->time().addMSecs(m_ui->lengthTimeEdit->time().msecsTo(QTime()));
 }
 
 void MainWindow::rescaleSubtitles()
@@ -481,17 +475,17 @@ void MainWindow::rescaleSubtitles()
 
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
-		m_subtitles[0][i].beginTime *= scale;
-		m_subtitles[0][i].endTime *= scale;
+		m_subtitles[0][i].begin =  QTime().addMSecs(QTime().msecsTo(m_subtitles[0][i].begin) * scale);
+		m_subtitles[0][i].end =  QTime().addMSecs(QTime().msecsTo(m_subtitles[0][i].end) * scale);
 	}
 
 	for (int i = 0; i < m_subtitles[1].count(); ++i)
 	{
-		m_subtitles[1][i].beginTime *= scale;
-		m_subtitles[1][i].endTime *= scale;
+		m_subtitles[1][i].begin =  QTime().addMSecs(QTime().msecsTo(m_subtitles[1][i].begin) * scale);
+		m_subtitles[1][i].end =  QTime().addMSecs(QTime().msecsTo(m_subtitles[1][i].end) * scale);
 	}
 
-	showSubtitle();
+	selectSubtitle();
 }
 
 void MainWindow::updateVideo()
@@ -501,11 +495,11 @@ void MainWindow::updateVideo()
 	m_ui->graphicsView->centerOn(m_videoWidget);
 	m_ui->graphicsView->scene()->setSceneRect(m_ui->graphicsView->rect());
 
-	m_subtitlesTopWidget->setY(0);
-	m_subtitlesTopWidget->setTextWidth(m_ui->graphicsView->scene()->width());
+	m_subtitlesTopWidget->setPos(5, 5);
+	m_subtitlesTopWidget->setTextWidth(m_ui->graphicsView->scene()->width() - 10);
 
-	m_subtitlesBottomWidget->setY(m_ui->graphicsView->scene()->height() - m_subtitlesBottomWidget->shape().controlPointRect().height());
-	m_subtitlesBottomWidget->setTextWidth(m_ui->graphicsView->scene()->width());
+	m_subtitlesBottomWidget->setPos(5, (m_ui->graphicsView->scene()->height()- 5 - m_subtitlesBottomWidget->shape().controlPointRect().height()));
+	m_subtitlesBottomWidget->setTextWidth(m_ui->graphicsView->scene()->width() - 10);
 }
 
 void MainWindow::playPause()
@@ -582,11 +576,10 @@ QList<Subtitle> MainWindow::readSubtitles(const QString &fileName)
 			QStringList capturedTexts = expression.capturedTexts();
 			Subtitle subtitle;
 
-			subtitle.text = capturedTexts.at(5);
-			subtitle.beginTime = capturedTexts.at(3).toDouble();
-			subtitle.endTime = capturedTexts.at(4).toDouble();
-			subtitle.positionX = capturedTexts.at(1).toInt();
-			subtitle.positionY = capturedTexts.at(2).toInt();
+			subtitle.text = capturedTexts.value(5);
+			subtitle.begin = QTime().addMSecs(capturedTexts.value(3).toFloat() * 1000);
+			subtitle.end = QTime().addMSecs(capturedTexts.value(4).toFloat() * 1000);
+			subtitle.position = QPoint(capturedTexts.value(1).toInt(), capturedTexts.value(2).toInt());
 
 			subtitles.append(subtitle);
 		}
@@ -603,15 +596,6 @@ QList<Subtitle> MainWindow::readSubtitles(const QString &fileName)
 
 
 	return subtitles;
-}
-
-double MainWindow::timeToSeconds(QTime time)
-{
-	double seconds = (time.minute() * 60);
-	seconds += time.second();
-	seconds += (time.msec() / 1000);
-
-	return seconds;
 }
 
 bool MainWindow::saveSubtitles(QString fileName)
@@ -641,9 +625,9 @@ bool MainWindow::saveSubtitles(QString fileName)
 
 		for (int j = 0; j < m_subtitles[i].count(); ++j)
 		{
-			textStream << QString("%1\t%2\t\t%3\t%4\t_(\"%5\")\n").arg(m_subtitles[i][j].positionX).arg(m_subtitles[i][j].positionY).arg(m_subtitles[i][j].beginTime).arg(m_subtitles[i][j].endTime).arg(m_subtitles[i][j].text);
+			textStream << QString("%1\t%2\t\t%3\t%4\t_(\"%5\")\n").arg(m_subtitles[i][j].position.x()).arg(m_subtitles[i][j].position.y()).arg(timeToString(m_subtitles[i][j].begin.msecsTo(QTime()))).arg(timeToString(m_subtitles[i][j].end.msecsTo(QTime()))).arg(m_subtitles[i][j].text);
 
-			if ((j + 1) < m_subtitles[i].count() && m_subtitles[i][j].beginTime != m_subtitles[i][j + 1].beginTime)
+			if ((j + 1) < m_subtitles[i].count() && m_subtitles[i][j].begin != m_subtitles[i][j + 1].begin)
 			{
 				textStream << "\n";
 			}

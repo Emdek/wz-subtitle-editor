@@ -21,6 +21,8 @@
 #ifndef SUBTITLESEDITOR_H
 #define SUBTITLESEDITOR_H
 
+#include <QtCore/QTime>
+
 #include <QtGui/QLabel>
 #include <QtGui/QMainWindow>
 #include <QtGui/QGraphicsTextItem>
@@ -36,10 +38,9 @@ namespace Ui
 struct Subtitle
 {
 	QString text;
-	double beginTime;
-	double endTime;
-	int positionX;
-	int positionY;
+	QTime begin;
+	QTime end;
+	QPoint position;
 };
 
 class SubtitlesWidget;
@@ -47,6 +48,7 @@ class SubtitlesWidget;
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
+
 public:
 	MainWindow(QWidget *parent = 0);
 	~MainWindow();
@@ -64,7 +66,7 @@ public slots:
 	void removeSubtitle();
 	void previousSubtitle();
 	void nextSubtitle();
-	void showSubtitle();
+	void selectSubtitle();
 	void updateSubtitle();
 	void rescaleSubtitles();
 	void playPause();
@@ -75,7 +77,6 @@ protected:
 	void closeEvent(QCloseEvent *event);
 	QString timeToString(qint64 time);
 	QList<Subtitle> readSubtitles(const QString &fileName);
-	double timeToSeconds(QTime time);
 	bool saveSubtitles(QString fileName);
 	bool eventFilter(QObject *object, QEvent *event);
 
