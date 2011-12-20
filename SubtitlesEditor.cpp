@@ -122,9 +122,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	resize(QSettings().value("Window/size", size()).toSize());
 	move(QSettings().value("Window/position", pos()).toPoint());
 	restoreState(QSettings().value("Window/state", QByteArray()).toByteArray());
-
-	setWindowTitle(tr("%1 - Unnamed").arg("Subtitles Editor"));
-
+	setWindowTitle(tr("%1 - Unnamed[*]").arg("Subtitles Editor"));
 	updateVideo();
 
 	connect(m_ui->actionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
@@ -167,6 +165,13 @@ void MainWindow::changeEvent(QEvent *event)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+	if (isWindowModified() && QMessageBox::warning(this, tr("Question"), tr("Do you really want to close current subtitles without saving?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+	{
+		event->ignore();
+
+		return;
+	}
+
 	QSettings settings;
 	settings.setValue("Window/size", size());
 	settings.setValue("Window/position", pos());
@@ -181,7 +186,7 @@ void MainWindow::openMovie(const QString &fileName)
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
 
-	setWindowTitle(tr("%1 - %2").arg("Subtitles Editor").arg(title));
+	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
 
 	m_fileNameLabel->setText(title);
 	m_timeLabel->setText(QString("00:00.0 / %1").arg(timeToString(m_mediaObject->totalTime())));
@@ -196,6 +201,11 @@ void MainWindow::openMovie(const QString &fileName)
 
 void MainWindow::actionOpen()
 {
+	if (isWindowModified() && QMessageBox::warning(this, tr("Question"), tr("Do you really want to close current subtitles without saving?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+	{
+		return;
+	}
+
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video or Subtitle file"),
 			QSettings().value("lastUsedDir", QDesktopServices::storageLocation(QDesktopServices::HomeLocation)).toString(),
 			tr("Video and subtitle files (*.txt *.og?)"));
@@ -246,6 +256,7 @@ void MainWindow::actionOpen()
 		QSettings().setValue("lastUsedDir", QFileInfo(fileName).dir().path());
 	}
 
+	selectSubtitle();
 	updateActions();
 }
 
@@ -378,6 +389,8 @@ void MainWindow::addSubtitle()
 
 	nextSubtitle();
 	updateActions();
+
+	setWindowModified(true);
 }
 
 void MainWindow::removeSubtitle()
@@ -389,6 +402,8 @@ void MainWindow::removeSubtitle()
 		selectSubtitle();
 		updateActions();
 	}
+
+	setWindowModified(true);
 }
 
 void MainWindow::previousSubtitle()
@@ -471,6 +486,8 @@ void MainWindow::updateSubtitle()
 	m_subtitles[m_currentTrack][m_currentSubtitle].position = QPoint(m_ui->xPositionSpinBox->value(), m_ui->yPositionSpinBox->value());
 	m_subtitles[m_currentTrack][m_currentSubtitle].begin = m_ui->beginTimeEdit->time();
 	m_subtitles[m_currentTrack][m_currentSubtitle].end = m_ui->beginTimeEdit->time().addMSecs(m_ui->lengthTimeEdit->time().msecsTo(QTime()));
+
+	setWindowModified(true);
 }
 
 void MainWindow::rescaleSubtitles()
@@ -574,6 +591,7 @@ void MainWindow::openSubtitles(const QString &fileName, int index)
 		return;
 	}
 
+	setWindowModified(false);
 	m_subtitles[index].clear();
 
 	QTextStream textStream(&file);
@@ -608,10 +626,10 @@ void MainWindow::openSubtitles(const QString &fileName, int index)
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
 
-	setWindowTitle(tr("%1 - %2").arg("Subtitles Editor").arg(title));
-
 	m_fileNameLabel->setText(title);
-	}
+
+	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
+}
 
 bool MainWindow::saveSubtitles(QString fileName)
 {
@@ -654,9 +672,10 @@ bool MainWindow::saveSubtitles(QString fileName)
 	QString title = QFileInfo(fileName).fileName();
 	title = title.left(title.indexOf('.'));
 
-	setWindowTitle(tr("%1 - %2").arg("Subtitles Editor").arg(title));
-
 	m_fileNameLabel->setText(title);
+
+	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
+	setWindowModified(false);
 
 	return true;
 }
