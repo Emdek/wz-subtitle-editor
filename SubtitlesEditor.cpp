@@ -253,9 +253,15 @@ void MainWindow::actionSaveAs()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Subtitle file"), (m_currentPath.isEmpty()?QDesktopServices::storageLocation(QDesktopServices::HomeLocation):QFileInfo(m_currentPath).dir().path()));
 
-	if (!fileName.isEmpty())
+	if (!fileName.isEmpty() && saveSubtitles(fileName))
 	{
-		saveSubtitles(fileName);
+		QFileInfo fileInfo(fileName);
+		QStringList recentFiles = QSettings().value("recentFiles").toStringList();
+		recentFiles.removeAll(fileInfo.absoluteFilePath());
+		recentFiles.prepend(fileInfo.absoluteFilePath());
+		recentFiles = recentFiles.mid(0, 10);
+
+		QSettings().setValue("recentFiles", recentFiles);
 	}
 }
 
