@@ -58,10 +58,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	Phonon::createPath(m_mediaObject, audioOutput);
 
 	m_videoWidget->setWidget(videoWidget);
-	m_videoWidget->resize(300, 300);
-
-	m_subtitlesTopWidget->setDefaultTextColor(QColor(Qt::white));
-	m_subtitlesBottomWidget->setDefaultTextColor(QColor(Qt::white));
 
 	QGraphicsDropShadowEffect *topShadowEffect = new QGraphicsDropShadowEffect(m_subtitlesTopWidget);
 	topShadowEffect->setOffset(0, 0);
@@ -69,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	topShadowEffect->setColor(QColor(Qt::black));
 
 	m_subtitlesTopWidget->setGraphicsEffect(topShadowEffect);
+	m_subtitlesTopWidget->setDefaultTextColor(QColor(230, 230, 230));
 
 	QGraphicsDropShadowEffect *bottomShadowEffect = new QGraphicsDropShadowEffect(m_subtitlesBottomWidget);
 	bottomShadowEffect->setOffset(0, 0);
@@ -76,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	bottomShadowEffect->setColor(QColor(Qt::black));
 
 	m_subtitlesBottomWidget->setGraphicsEffect(bottomShadowEffect);
+	m_subtitlesBottomWidget->setDefaultTextColor(QColor(230, 230, 230));
 
 	m_ui->graphicsView->setScene(new QGraphicsScene(this));
 	m_ui->graphicsView->scene()->addItem(m_videoWidget);
