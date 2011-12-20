@@ -55,6 +55,8 @@ public:
 
 public slots:
 	void actionOpen();
+	void actionOpenRecent(QAction *action);
+	void actionClearRecentFiles();
 	void actionSave();
 	void actionSaveAs();
 	void actionAboutApplication();
@@ -72,13 +74,15 @@ public slots:
 	void playPause();
 	void updateVideo();
 	void updateActions();
+	void updateRecentFilesMenu();
 
 protected:
 	void changeEvent(QEvent *event);
 	void closeEvent(QCloseEvent *event);
 	void openMovie(const QString &filename);
-	void openSubtitles(const QString &fileName, int index);
 	QString timeToString(qint64 time);
+	bool openFile(const QString &fileName);
+	bool openSubtitles(const QString &fileName, int index);
 	bool saveSubtitles(QString fileName);
 	bool eventFilter(QObject *object, QEvent *event);
 

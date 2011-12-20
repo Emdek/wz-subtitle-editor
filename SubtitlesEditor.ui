@@ -202,7 +202,25 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="menuOpenRecent">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
+     <addaction name="openRecentFileAction_1"/>
+     <addaction name="openRecentFileAction_2"/>
+     <addaction name="openRecentFileAction_3"/>
+     <addaction name="openRecentFileAction_4"/>
+     <addaction name="openRecentFileAction_5"/>
+     <addaction name="openRecentFileAction_6"/>
+     <addaction name="openRecentFileAction_7"/>
+     <addaction name="openRecentFileAction_8"/>
+     <addaction name="openRecentFileAction_9"/>
+     <addaction name="openRecentFileAction_10"/>
+     <addaction name="separator"/>
+     <addaction name="actionClearRecentFiles"/>
+    </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuOpenRecent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
@@ -501,6 +519,21 @@
   <action name="actionStop">
    <property name="text">
     <string>Stop</string>
+   </property>
+  </action>
+  <action name="openRecentFileAction_1"/>
+  <action name="openRecentFileAction_2"/>
+  <action name="openRecentFileAction_3"/>
+  <action name="openRecentFileAction_4"/>
+  <action name="openRecentFileAction_5"/>
+  <action name="openRecentFileAction_6"/>
+  <action name="openRecentFileAction_7"/>
+  <action name="openRecentFileAction_8"/>
+  <action name="openRecentFileAction_9"/>
+  <action name="openRecentFileAction_10"/>
+  <action name="actionClearRecentFiles">
+   <property name="text">
+    <string>Clear List</string>
    </property>
   </action>
  </widget>

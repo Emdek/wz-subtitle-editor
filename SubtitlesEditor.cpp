@@ -99,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	m_timeLabel = new QLabel("00:00.0 / 00:00.0", this);
 
 	m_ui->actionOpen->setIcon(QIcon::fromTheme("document-open", style()->standardIcon(QStyle::SP_DirOpenIcon)));
+	m_ui->menuOpenRecent->setIcon(QIcon::fromTheme("document-open-recent"));
+	m_ui->actionClearRecentFiles->setIcon(QIcon::fromTheme("edit-clear-list"));
 	m_ui->actionSave->setIcon(QIcon::fromTheme("document-save", style()->standardIcon(QStyle::SP_DialogSaveButton)));
 	m_ui->actionSaveAs->setIcon(QIcon::fromTheme("document-save-as"));
 	m_ui->actionExit->setIcon(QIcon::fromTheme("application-exit", style()->standardIcon(QStyle::SP_DialogCloseButton)));
@@ -125,7 +127,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	setWindowTitle(tr("%1 - Unnamed[*]").arg("Subtitles Editor"));
 	updateVideo();
 
+	connect(m_ui->menuFile, SIGNAL(aboutToShow()), this, SLOT(updateRecentFilesMenu()));
 	connect(m_ui->actionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
+	connect(m_ui->menuOpenRecent, SIGNAL(triggered(QAction*)), this, SLOT(actionOpenRecent(QAction*)));
+	connect(m_ui->actionClearRecentFiles, SIGNAL(triggered()), this, SLOT(actionClearRecentFiles()));
 	connect(m_ui->actionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
 	connect(m_ui->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
 	connect(m_ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
@@ -212,52 +217,24 @@ void MainWindow::actionOpen()
 
 	if (!fileName.isEmpty())
 	{
-		const QString basename = fileName.left(fileName.length() - 3);
-		const QString oggfile = basename + "ogg";
-		const QString ogmfile = basename + "ogm";
-		const QString ogvfile = basename + "ogv";
-		const QString txtfile = basename + "txt";
-		const QString txafile = basename + "txa";
-
-		m_subtitles[0].clear();
-		m_subtitles[1].clear();
-
-		if (QFile::exists(oggfile))
-		{
-			openMovie(oggfile);
-		}
-
-		if (QFile::exists(ogmfile))
-		{
-			openMovie(ogmfile);
-		}
-
-		if (QFile::exists(ogvfile))
-		{
-			openMovie(ogvfile);
-		}
-
-		if (QFile::exists(txtfile))
-		{
-			openSubtitles(txtfile, 1);
-
-			m_currentPath = fileName;
-		}
-
-		if (QFile::exists(txafile))
-		{
-			openSubtitles(txafile, 0);
-
-			m_currentPath = fileName;
-		}
-
-		selectTrack(1);
-
-		QSettings().setValue("lastUsedDir", QFileInfo(fileName).dir().path());
+		openFile(fileName);
 	}
 
 	selectSubtitle();
 	updateActions();
+}
+
+void MainWindow::actionOpenRecent(QAction *action)
+{
+	if (!action->data().toString().isEmpty())
+	{
+		openFile(action->data().toString());
+	}
+}
+
+void MainWindow::actionClearRecentFiles()
+{
+	QSettings().remove("recentFiles");
 }
 
 void MainWindow::actionSave()
@@ -548,6 +525,29 @@ void MainWindow::updateActions()
 	m_ui->actionRescale->setEnabled(available);
 }
 
+void MainWindow::updateRecentFilesMenu()
+{
+	QStringList recentFiles = QSettings().value("recentFiles").toStringList();
+
+	for (int i = 0; i < 10; ++i)
+	{
+		if (i < recentFiles.count())
+		{
+			QFileInfo fileInfo(recentFiles.at(i));
+
+			m_ui->menuOpenRecent->actions().at(i)->setText(QString("%1. %2 (%3)").arg(i + 1).arg(fileInfo.fileName()).arg(recentFiles.at(i)));
+			m_ui->menuOpenRecent->actions().at(i)->setData(recentFiles.at(i));
+			m_ui->menuOpenRecent->actions().at(i)->setVisible(true);
+		}
+		else
+		{
+			m_ui->menuOpenRecent->actions().at(i)->setVisible(false);
+		}
+	}
+
+	m_ui->menuOpenRecent->setEnabled(recentFiles.count());
+}
+
 QString MainWindow::timeToString(qint64 time)
 {
 	QString string;
@@ -580,7 +580,63 @@ QString MainWindow::timeToString(qint64 time)
 	return string;
 }
 
-void MainWindow::openSubtitles(const QString &fileName, int index)
+bool MainWindow::openFile(const QString &fileName)
+{
+	const QString basename = fileName.left(fileName.length() - 3);
+	const QString oggfile = basename + "ogg";
+	const QString ogmfile = basename + "ogm";
+	const QString ogvfile = basename + "ogv";
+	const QString txtfile = basename + "txt";
+	const QString txafile = basename + "txa";
+	bool status = true;
+
+	m_subtitles[0].clear();
+	m_subtitles[1].clear();
+
+	if (QFile::exists(oggfile))
+	{
+		openMovie(oggfile);
+	}
+
+	if (QFile::exists(ogmfile))
+	{
+		openMovie(ogmfile);
+	}
+
+	if (QFile::exists(ogvfile))
+	{
+		openMovie(ogvfile);
+	}
+
+	if (QFile::exists(txtfile))
+	{
+		status = openSubtitles(txtfile, 1);
+
+		m_currentPath = fileName;
+	}
+
+	if (QFile::exists(txafile))
+	{
+		status = openSubtitles(txafile, 0);
+
+		m_currentPath = fileName;
+	}
+
+	selectTrack(1);
+
+	QFileInfo fileInfo(fileName);
+	QStringList recentFiles = QSettings().value("recentFiles").toStringList();
+	recentFiles.removeAll(fileInfo.absoluteFilePath());
+	recentFiles.prepend(fileInfo.absoluteFilePath());
+	recentFiles = recentFiles.mid(0, 10);
+
+	QSettings().setValue("recentFiles", recentFiles);
+	QSettings().setValue("lastUsedDir", fileInfo.dir().path());
+
+	return status;
+}
+
+bool MainWindow::openSubtitles(const QString &fileName, int index)
 {
 	QFile file(fileName);
 
@@ -588,7 +644,7 @@ void MainWindow::openSubtitles(const QString &fileName, int index)
 	{
 		QMessageBox::warning(this, tr("Error"), tr("Can not read subtitle file:\n%1").arg(fileName));
 
-		return;
+		return false;
 	}
 
 	setWindowModified(false);
@@ -629,6 +685,8 @@ void MainWindow::openSubtitles(const QString &fileName, int index)
 	m_fileNameLabel->setText(title);
 
 	setWindowTitle(tr("%1 - %2[*]").arg("Subtitles Editor").arg(title));
+
+	return true;
 }
 
 bool MainWindow::saveSubtitles(QString fileName)
