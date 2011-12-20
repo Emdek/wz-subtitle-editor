@@ -317,6 +317,8 @@ void MainWindow::finished()
 
 	m_videoWidget->widget()->show();
 	m_videoWidget->widget()->update();
+	m_subtitlesTopWidget->setHtml(QString());
+	m_subtitlesBottomWidget->setHtml(QString());
 }
 
 void MainWindow::tick()
