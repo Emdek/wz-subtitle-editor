@@ -1,14 +1,12 @@
 # -------------------------------------------------
 # Project created by QtCreator 2010-04-20T08:57:59
 # -------------------------------------------------
-QT += phonon
+QT += multimedia
+QT += multimediawidgets
+QT += widgets
 TARGET = SubtitlesEditor
 TEMPLATE = app
-SOURCES += main.cpp \
-    SubtitlesEditor.cpp
-HEADERS += SubtitlesEditor.h
-FORMS += SubtitlesEditor.ui
-
-UI_DIR = ui
-MOC_DIR = moc
-OBJECTS_DIR = obj
+SOURCES += src/main.cpp \
+	src/SubtitlesEditor.cpp
+HEADERS += src/SubtitlesEditor.h
+FORMS += src/SubtitlesEditor.ui

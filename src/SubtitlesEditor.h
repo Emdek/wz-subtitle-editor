@@ -1,6 +1,6 @@
 /***********************************************************************************
-* Warzone 2100 Subtitles Editor.
-* Copyright (C) 2010 - 2011 Michal Dutkiewicz aka Emdek <emdeck@gmail.com>
+* Warzone 2100 Subtitles Editor
+* Copyright (C) 2010 - 2013 Michal Dutkiewicz aka Emdek <emdeck@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -22,12 +22,10 @@
 #define SUBTITLESEDITOR_H
 
 #include <QtCore/QTime>
-
-#include <QtGui/QMainWindow>
-#include <QtGui/QGraphicsTextItem>
-#include <QtGui/QGraphicsProxyWidget>
-
-#include <Phonon/MediaObject>
+#include <QtMultimedia/QMediaPlayer>
+#include <QtMultimediaWidgets/QGraphicsVideoItem>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QGraphicsTextItem>
 
 namespace Ui
 {
@@ -49,31 +47,8 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	MainWindow(QWidget *parent = 0);
+	MainWindow(QWidget *parent = NULL);
 	~MainWindow();
-
-public slots:
-	void actionOpen();
-	void actionOpenRecent(QAction *action);
-	void actionClearRecentFiles();
-	void actionSave();
-	void actionSaveAs();
-	void actionAboutApplication();
-	void stateChanged(Phonon::State state);
-	void finished();
-	void tick();
-	void selectTrack(int track);
-	void addSubtitle();
-	void removeSubtitle();
-	void previousSubtitle();
-	void nextSubtitle();
-	void selectSubtitle();
-	void updateSubtitle();
-	void rescaleSubtitles();
-	void playPause();
-	void updateVideo();
-	void updateActions();
-	void updateRecentFilesMenu();
 
 protected:
 	void changeEvent(QEvent *event);
@@ -85,10 +60,35 @@ protected:
 	bool saveSubtitles(const QString &fileName);
 	bool eventFilter(QObject *object, QEvent *event);
 
+protected slots:
+	void actionOpen();
+	void actionOpenRecent(QAction *action);
+	void actionClearRecentFiles();
+	void actionSave();
+	void actionSaveAs();
+	void actionAboutApplication();
+	void errorOccured(QMediaPlayer::Error error);
+	void stateChanged(QMediaPlayer::State state);
+	void durationChanged(qint64 duration);
+	void positionChanged(qint64 position);
+	void playPause();
+	void seek(int position);
+	void selectTrack(int track);
+	void addSubtitle();
+	void removeSubtitle();
+	void previousSubtitle();
+	void nextSubtitle();
+	void selectSubtitle();
+	void updateSubtitle();
+	void rescaleSubtitles();
+	void updateVideo();
+	void updateActions();
+	void updateRecentFilesMenu();
+
 private:
 	Ui::MainWindow *m_ui;
-	Phonon::MediaObject *m_mediaObject;
-	QGraphicsProxyWidget *m_videoWidget;
+	QMediaPlayer *m_mediaPlayer;
+	QGraphicsVideoItem *m_videoWidget;
 	QGraphicsTextItem *m_subtitlesTopWidget;
 	QGraphicsTextItem *m_subtitlesBottomWidget;
 	QString m_currentPath;
@@ -102,4 +102,4 @@ signals:
 
 };
 
-#endif // SUBTITLESEDITOR_H
+#endif
