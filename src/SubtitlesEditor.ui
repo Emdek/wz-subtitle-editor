@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
-    <height>818</height>
+    <width>394</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -29,6 +29,12 @@
     </property>
     <item>
      <widget class="QGraphicsView" name="graphicsView">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>200</height>
+       </size>
+      </property>
       <property name="palette">
        <palette>
         <active>
@@ -191,7 +197,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>648</width>
+     <width>394</width>
      <height>24</height>
     </rect>
    </property>
