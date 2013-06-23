@@ -304,7 +304,7 @@ void MainWindow::positionChanged(qint64 position)
 	QString currentTopSubtitles;
 	const QTime currentTime = QTime().addMSecs(m_mediaPlayer->position());
 
-	emit timeChanged(QString("%1 / %2").arg(timeToString(m_mediaPlayer->position())).arg(timeToString(m_mediaPlayer->duration())));
+	emit timeChanged(QString("%1 / %2").arg(timeToString(m_mediaPlayer->position(), true)).arg(timeToString(m_mediaPlayer->duration(), true)));
 
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
