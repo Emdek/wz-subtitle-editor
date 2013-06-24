@@ -275,6 +275,7 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
 			m_ui->actionPlayPause->setEnabled(true);
 			m_ui->actionPlayPause->setIcon(QIcon::fromTheme("media-playback-pause", style()->standardIcon(QStyle::SP_MediaPause)));
 			m_ui->actionStop->setEnabled(true);
+			m_ui->seekSlider->setValue(0);
 			m_ui->seekSlider->setRange(0, m_mediaPlayer->duration());
 			m_videoWidget->show();
 
@@ -330,8 +331,6 @@ void MainWindow::positionChanged(qint64 position)
 
 	m_subtitlesTopWidget->setHtml(currentTopSubtitles.left(currentTopSubtitles.length() - 6));
 	m_subtitlesBottomWidget->setHtml(currentBottomSubtitles.left(currentBottomSubtitles.length() - 6));
-
-	updateVideo();
 }
 
 void MainWindow::playPause()
@@ -478,14 +477,14 @@ void MainWindow::rescaleSubtitles()
 
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
-		m_subtitles[0][i].begin =  QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[0][i].begin) * scale);
-		m_subtitles[0][i].end =  QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[0][i].end) * scale);
+		m_subtitles[0][i].begin = QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[0][i].begin) * scale);
+		m_subtitles[0][i].end = QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[0][i].end) * scale);
 	}
 
 	for (int i = 0; i < m_subtitles[1].count(); ++i)
 	{
-		m_subtitles[1][i].begin =  QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[1][i].begin) * scale);
-		m_subtitles[1][i].end =  QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[1][i].end) * scale);
+		m_subtitles[1][i].begin = QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[1][i].begin) * scale);
+		m_subtitles[1][i].end = QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[1][i].end) * scale);
 	}
 
 	selectSubtitle();
@@ -519,7 +518,7 @@ void MainWindow::updateActions()
 
 void MainWindow::updateRecentFilesMenu()
 {
-	QStringList recentFiles = QSettings().value("recentFiles").toStringList();
+	const QStringList recentFiles = QSettings().value("recentFiles").toStringList();
 
 	for (int i = 0; i < 10; ++i)
 	{

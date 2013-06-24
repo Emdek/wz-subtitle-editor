@@ -1,6 +1,6 @@
 /***********************************************************************************
-* Warzone 2100 Subtitles Editor.
-* Copyright (C) 2010 - 2011 Michal Dutkiewicz aka Emdek <emdeck@gmail.com>
+* Warzone 2100 Subtitles Editor
+* Copyright (C) 2010 - 2013 Michal Dutkiewicz aka Emdek <emdeck@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
