@@ -201,7 +201,7 @@ void MainWindow::actionOpen(QString fileName)
 
 	if (!openFile(fileName))
 	{
-		QMessageBox::warning(this, tr("Warning"), tr("Failed to open sequence."));
+		QMessageBox::warning(this, tr("Error"), tr("Can not open sequence files."));
 	}
 
 	selectSubtitle();
