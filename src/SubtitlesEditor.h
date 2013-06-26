@@ -61,7 +61,7 @@ protected:
 	bool eventFilter(QObject *object, QEvent *event);
 
 protected slots:
-	void actionOpen();
+    void actionOpen(QString fileName = QString());
 	void actionOpenRecent(QAction *action);
 	void actionClearRecentFiles();
 	void actionSave();

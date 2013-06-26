@@ -182,18 +182,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	event->accept();
 }
 
-void MainWindow::actionOpen()
+void MainWindow::actionOpen(QString fileName)
 {
 	if (isWindowModified() && QMessageBox::warning(this, tr("Question"), tr("Do you really want to close current subtitles without saving?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
 	{
 		return;
 	}
 
-	QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video or Subtitle file"), QSettings().value("lastUsedDir", QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first()).toString(), tr("Video and subtitle files (*.txt *.txa *.og?)"));
-
-	if (!fileName.isEmpty())
+	if (fileName.isEmpty())
 	{
-		openFile(fileName);
+		fileName = QFileDialog::getOpenFileName(this, tr("Open Video or Subtitle file"), QSettings().value("lastUsedDir", QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first()).toString(), tr("Video and subtitle files (*.txt *.txa *.og?)"));
+	}
+
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+
+	if (!openFile(fileName))
+	{
+		QMessageBox::warning(this, tr("Warning"), tr("Failed to open sequence."));
 	}
 
 	selectSubtitle();
@@ -206,7 +214,7 @@ void MainWindow::actionOpenRecent(QAction *action)
 {
 	if (!action->data().toString().isEmpty())
 	{
-		openFile(action->data().toString());
+		actionOpen(action->data().toString());
 	}
 }
 
@@ -580,6 +588,11 @@ QString MainWindow::timeToString(qint64 time, bool readable)
 
 bool MainWindow::openFile(const QString &fileName)
 {
+	if (!QFile::exists(fileName))
+	{
+		return false;
+	}
+
 	m_currentPath = fileName.left(fileName.lastIndexOf('.'));
 
 	const QString oggFile = m_currentPath + ".ogg";
@@ -587,34 +600,33 @@ bool MainWindow::openFile(const QString &fileName)
 	const QString ogvFile = m_currentPath + ".ogv";
 	const QString txtFile = m_currentPath + ".txt";
 	const QString txaFile = m_currentPath + ".txa";
-	bool status = true;
 
 	m_subtitles[0].clear();
 	m_subtitles[1].clear();
 
 	if (QFile::exists(oggFile) && !openMovie(oggFile))
 	{
-		status = false;
+		return false;
 	}
 
 	if (QFile::exists(ogmFile) && !openMovie(ogmFile))
 	{
-		status = false;
+		return false;
 	}
 
 	if (QFile::exists(ogvFile) && !openMovie(ogvFile))
 	{
-		status = false;
+		return false;
 	}
 
 	if (QFile::exists(txaFile) && !openSubtitles(txaFile, 0))
 	{
-		status = false;
+		return false;
 	}
 
 	if (QFile::exists(txtFile) && !openSubtitles(txtFile, 1))
 	{
-		status = false;
+		return false;
 	}
 
 	selectTrack(1);
@@ -636,7 +648,7 @@ bool MainWindow::openFile(const QString &fileName)
 	QSettings().setValue("recentFiles", recentFiles);
 	QSettings().setValue("lastUsedDir", fileInfo.dir().path());
 
-	return status;
+	return true;
 }
 
 bool MainWindow::openMovie(const QString &fileName)
