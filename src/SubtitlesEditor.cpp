@@ -198,6 +198,8 @@ void MainWindow::actionOpen()
 
 	selectSubtitle();
 	updateActions();
+
+	m_ui->seekSlider->setValue(0);
 }
 
 void MainWindow::actionOpenRecent(QAction *action)
