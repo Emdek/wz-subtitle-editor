@@ -115,6 +115,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	move(QSettings().value("Window/position", pos()).toPoint());
 	restoreState(QSettings().value("Window/state", QByteArray()).toByteArray());
 	setWindowTitle(tr("%1 - Unnamed[*]").arg("Subtitles Editor"));
+	updateAudio();
 	updateVideo();
 
 	connect(this, SIGNAL(fileChanged(QString)), fileNameLabel, SLOT(setText(QString)));
@@ -142,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 	connect(m_mediaPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
 	connect(m_mediaPlayer, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
 	connect(m_mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
+	connect(m_mediaPlayer, SIGNAL(volumeChanged(int)), this, SLOT(updateAudio()));
 }
 
 MainWindow::~MainWindow()
@@ -498,6 +500,11 @@ void MainWindow::rescaleSubtitles()
 	}
 
 	selectSubtitle();
+}
+
+void MainWindow::updateAudio()
+{
+	m_ui->volumeSlider->setToolTip(tr("Volume: %1%").arg(m_mediaPlayer->volume()));
 }
 
 void MainWindow::updateVideo()

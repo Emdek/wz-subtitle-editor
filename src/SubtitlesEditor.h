@@ -81,6 +81,7 @@ protected slots:
 	void selectSubtitle();
 	void updateSubtitle();
 	void rescaleSubtitles();
+	void updateAudio();
 	void updateVideo();
 	void updateActions();
 	void updateRecentFilesMenu();
