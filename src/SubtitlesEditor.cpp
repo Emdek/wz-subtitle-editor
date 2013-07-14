@@ -275,6 +275,7 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
 			m_ui->actionStop->setEnabled(false);
 			m_ui->seekSlider->setValue(0);
 			m_ui->seekSlider->setRange(0, 0);
+			m_ui->seekSlider->setToolTip(QString());
 			m_subtitlesTopWidget->setHtml(QString());
 			m_subtitlesBottomWidget->setHtml(QString());
 			m_videoWidget->hide();
@@ -289,6 +290,7 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
 			m_ui->actionStop->setEnabled(true);
 			m_ui->seekSlider->setValue(0);
 			m_ui->seekSlider->setRange(0, m_mediaPlayer->duration());
+			m_ui->seekSlider->setToolTip(tr("Position: %1").arg(QString("%1 / %2").arg(timeToString(m_mediaPlayer->position(), true)).arg(timeToString(m_mediaPlayer->duration(), true))));
 			m_videoWidget->show();
 
 			break;
@@ -307,6 +309,7 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
 void MainWindow::durationChanged(qint64 duration)
 {
 	m_ui->seekSlider->setRange(0, duration);
+	m_ui->seekSlider->setToolTip(tr("Position: %1").arg(QString("%1 / %2").arg(timeToString(m_mediaPlayer->position(), true)).arg(timeToString(m_mediaPlayer->duration(), true))));
 }
 
 void MainWindow::positionChanged(qint64 position)
@@ -315,9 +318,12 @@ void MainWindow::positionChanged(qint64 position)
 
 	QString currentBottomSubtitles;
 	QString currentTopSubtitles;
+	const QString message = QString("%1 / %2").arg(timeToString(m_mediaPlayer->position(), true)).arg(timeToString(m_mediaPlayer->duration(), true));
 	const QTime currentTime = QTime(0, 0, 0).addMSecs(m_mediaPlayer->position());
 
-	emit timeChanged(QString("%1 / %2").arg(timeToString(m_mediaPlayer->position(), true)).arg(timeToString(m_mediaPlayer->duration(), true)));
+	emit timeChanged(message);
+
+	m_ui->seekSlider->setToolTip(tr("Position: %1").arg(message));
 
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
