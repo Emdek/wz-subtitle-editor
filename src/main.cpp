@@ -24,14 +24,14 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication application(argc, argv);
-    application.setApplicationName("WZSubtitlesEditor");
-    application.setApplicationVersion("1.1");
-    application.setOrganizationName("Warzone2100");
-    application.setOrganizationDomain("wz2100.net");
+	QApplication application(argc, argv);
+	application.setApplicationName("WZSubtitlesEditor");
+	application.setApplicationVersion("1.1");
+	application.setOrganizationName("Warzone2100");
+	application.setOrganizationDomain("wz2100.net");
 
-    MainWindow window;
-    window.show();
+	MainWindow window;
+	window.show();
 
-    return application.exec();
+	return application.exec();
 }
