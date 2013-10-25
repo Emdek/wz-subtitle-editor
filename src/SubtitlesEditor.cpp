@@ -493,6 +493,11 @@ void MainWindow::rescaleSubtitles()
 	bool ok = false;
 	double scale = QInputDialog::getDouble(this, tr("Rescale Subtitles"), tr("Insert time multiplier:"), 1, 0, 100, 5, &ok);
 
+	if (!ok)
+	{
+		return;
+	}
+
 	for (int i = 0; i < m_subtitles[0].count(); ++i)
 	{
 		m_subtitles[0][i].begin = QTime(0, 0, 0).addMSecs(QTime(0, 0, 0).msecsTo(m_subtitles[0][i].begin) * scale);
